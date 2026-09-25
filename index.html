@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Nativa Botanics - premium herbal teas, jamu, superfoods, and organic snacks from Indonesia.">
+  <title>Nativa Botanics | Modern herbal pantry</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg class="sr-only" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="container-glass" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.02" numOctaves="2" seed="92" result="noise"></feTurbulence>
+        <feGaussianBlur in="noise" stdDeviation="1.2" result="blur"></feGaussianBlur>
+        <feDisplacementMap in="SourceGraphic" in2="blur" scale="50" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+      </filter>
+      <filter id="goo" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"></feGaussianBlur>
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo"></feColorMatrix>
+        <feBlend in="SourceGraphic" in2="goo"></feBlend>
+      </filter>
+      <filter id="knockout" color-interpolation-filters="sRGB">
+        <feColorMatrix result="knocked" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 1 0" />
+        <feComponentTransfer>
+          <feFuncR type="linear" slope="3" intercept="-1" />
+          <feFuncG type="linear" slope="3" intercept="-1" />
+          <feFuncB type="linear" slope="3" intercept="-1" />
+        </feComponentTransfer>
+        <feComponentTransfer>
+          <feFuncR type="table" tableValues="0 0 0 0 0 1 1 1 1 1" />
+          <feFuncG type="table" tableValues="0 0 0 0 0 1 1 1 1 1" />
+          <feFuncB type="table" tableValues="0 0 0 0 0 1 1 1 1 1" />
+        </feComponentTransfer>
+      </filter>
+      <filter id="remove-black" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -255 -255 -255 0 1" result="black-pixels" />
+        <feMorphology in="black-pixels" operator="dilate" radius="0.5" result="smoothed" />
+        <feComposite in="SourceGraphic" in2="smoothed" operator="out" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="ambient ambient-three" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <nav class="nav-shell" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="Nativa Botanics home">
+        <span class="brand-mark">N</span>
+        <span><strong>NATIVA</strong><small>BOTANICS</small></span>
+      </a>
+      <div class="search-wrap">
+        <label class="sr-only" for="searchInput">Search herbal products</label>
+        <span class="search-icon" aria-hidden="true">&#9906;</span>
+        <input id="searchInput" type="search" placeholder="Search tea, jamu, superfoods..." autocomplete="off">
+        <div id="autocomplete" class="autocomplete" role="listbox" aria-label="Search suggestions"></div>
+      </div>
+    </nav>
+  </header>
+
+  <nav class="dockbar" aria-label="Quick actions">
+    <div class="nav-actions">
+      <span class="dock-indicator" aria-hidden="true"></span>
+      <button class="dock-item icon-button" id="wishlistButton" data-slide="wishlist" type="button" aria-label="View wishlist">
+        <span class="dock-icon" aria-hidden="true">&#9825;</span><i id="wishlistCount">0</i>
+        <small>Wishlist</small>
+      </button>
+      <button class="dock-item icon-button cart-button" id="cartButton" data-slide="cart" type="button" aria-label="View shopping cart">
+        <span class="dock-icon" aria-hidden="true">&#128722;</span><i id="cartCount">0</i>
+        <small>Keranjang</small>
+      </button>
+      <button class="dock-item avatar" data-slide="account" type="button" aria-label="Open account menu">
+        <span class="dock-icon">AM</span>
+        <small>Akun</small>
+      </button>
+    </div>
+  </nav>
+
+  <section class="dock-sheet" id="dockSheet" aria-label="Quick action panel" aria-live="polite">
+    <div class="dock-track">
+      <article class="dock-slide" data-slide="wishlist">
+        <div class="dock-slide-heading"><span class="dock-slide-icon">&#9825;</span><div><p>Saved rituals</p><h2>Wishlist</h2></div><button class="dock-close" type="button" aria-label="Close quick action panel">&#10005;</button></div>
+        <p class="dock-empty" id="wishlistEmpty">Your wishlist is waiting for a ritual.</p>
+        <div class="dock-list" id="wishlistList"></div>
+      </article>
+      <article class="dock-slide" data-slide="cart">
+        <div class="dock-slide-heading"><span class="dock-slide-icon">&#128722;</span><div><p>Ready for checkout</p><h2>Keranjang</h2></div><button class="dock-close" type="button" aria-label="Close quick action panel">&#10005;</button></div>
+        <p class="dock-empty" id="cartEmpty">Your botanical basket is ready.</p>
+        <div class="dock-list dock-cart-list" id="cartList"></div>
+        <div class="dock-cart-total" id="cartTotal">0 item</div>
+      </article>
+      <article class="dock-slide" data-slide="account">
+        <div class="dock-slide-heading"><span class="dock-slide-icon account-icon">AM</span><div><p>Your personal space</p><h2>Akun</h2></div><button class="dock-close" type="button" aria-label="Close quick action panel">&#10005;</button></div>
+        <div class="account-card" id="accountCard">
+          <strong id="accountGreeting">Welcome back, Amara</strong>
+          <span id="accountSummary">12 ritual points waiting for you</span>
+          <label class="account-name-field">
+            <span>Your name</span>
+            <input id="accountNameInput" type="text" value="Amara" maxlength="24" aria-label="Your name">
+          </label>
+          <div class="account-actions">
+            <button type="button" class="dock-action" id="saveAccountName">Save name</button>
+            <button type="button" class="dock-action secondary" id="resetAccountName">Reset</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <main id="top">
+    <section class="hero section-shell" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> Curated from the archipelago</p>
+        <h1 id="heroTitle">Rituals for<br><em>better days.</em></h1>
+        <p class="hero-description">Small-batch botanicals, thoughtfully blended for the way you live now. Discover Indonesia's ancient wisdom in a beautifully modern pantry.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#catalog">Explore collection <span aria-hidden="true">&#8594;</span></a>
+          <button class="text-button" id="storyButton" type="button">Our sourcing story <span aria-hidden="true">&#8599;</span></button>
+        </div>
+        <div class="hero-note"><span class="note-avatar">S</span><span>Trusted by <strong>12,000+</strong> mindful households</span></div>
+      </div>
+      <div class="hero-product" aria-label="Featured botanical product photo">
+        <div class="hero-photo-frame">
+          <img src="https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=900&q=80" alt="Fresh herbal ingredients arranged in a botanical studio">
+        </div>
+      </div>
+    </section>
+
+    <section class="category-strip section-shell" aria-label="Shop by category">
+      <div class="section-kicker"><span>01</span><strong>Shop by ritual</strong><span class="rule"></span><small>Find your daily balance</small></div>
+      <div class="category-buttons" id="categoryButtons">
+        <button class="category-button active" data-category="all" type="button"><span class="category-icon">&#10024;</span><span>All ritual blends</span><small>24 products</small></button>
+        <button class="category-button" data-category="teas" type="button"><span class="category-icon">&#9749;</span><span>Botanical teas</span><small>08 products</small></button>
+        <button class="category-button" data-category="jamu" type="button"><span class="category-icon">&#10047;</span><span>Modern jamu</span><small>06 products</small></button>
+        <button class="category-button" data-category="superfoods" type="button"><span class="category-icon">&#10052;</span><span>Superfoods</span><small>05 products</small></button>
+        <button class="category-button" data-category="supplements" type="button"><span class="category-icon">&#9672;</span><span>Supplements</span><small>05 products</small></button>
+      </div>
+    </section>
+
+    <section class="catalog-section section-shell" id="catalog" aria-labelledby="catalogTitle">
+      <div class="catalog-heading"><div><p class="eyebrow"><span></span> The Nativa edit</p><h2 id="catalogTitle">Good things, <em>grown well.</em></h2></div><button class="sort-button" id="sortButton" type="button">Sort: Featured <span aria-hidden="true">&#8595;</span></button></div>
+      <div class="products-area"><div class="results-bar"><span id="resultCount">Showing 8 of 24 products</span><button class="view-toggle active" type="button" aria-label="Grid view">&#9783;</button><button class="view-toggle" type="button" aria-label="List view">&#9776;</button></div><div class="product-grid" id="productGrid"></div><div id="emptyState" class="empty-state" hidden><span>&#10047;</span><h3>No ritual found</h3><p>Try another product name or category.</p></div></div>
+    </section>
+
+    <section class="wholesale-section section-shell" aria-labelledby="wholesaleTitle"><div class="wholesale-content"><p class="eyebrow gold"><span></span> For cafes, hotels & retailers</p><h2 id="wholesaleTitle">Stock something<br><em>worth sharing.</em></h2><p>Bring thoughtful wellness to your shelves. Get flexible MOQs, custom packaging, and a dedicated botanical partner.</p><button class="button button-light" id="rfqButton" type="button">Start a bulk inquiry <span aria-hidden="true">&#8594;</span></button></div><div class="wholesale-stats"><div><strong>20<span>+</span></strong><small>Botanical SKUs</small></div><div><strong>48<span>h</span></strong><small>Response time</small></div><div><strong>15<span>kg</span></strong><small>Starting MOQ</small></div></div><div class="leaf-art leaf-one">&#10047;</div><div class="leaf-art leaf-two">&#10047;</div></section>
+
+    <section class="trust-section section-shell"><div class="section-kicker"><span>02</span><strong>Goodness, verified</strong><span class="rule"></span><small>From source to sip</small></div><div class="trust-grid"><div class="trust-item"><span class="trust-icon">&#10003;</span><div><strong>BPOM registered</strong><p>Safe, tested, and made to Indonesian standards.</p></div></div><div class="trust-item"><span class="trust-icon halal">&#10022;</span><div><strong>Halal certified</strong><p>Mindful ingredients, transparent processes.</p></div></div><div class="trust-item"><span class="trust-icon">&#10047;</span><div><strong>Organic first</strong><p>Better for your body, better for the soil.</p></div></div></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="footer-top section-shell"><div class="footer-brand"><a class="brand" href="#top"><span class="brand-mark">N</span><span><strong>NATIVA</strong><small>BOTANICS</small></span></a><p>Ancient wisdom.<br>Modern ritual.</p></div><div class="footer-links"><div><strong>Explore</strong><a href="#catalog">All products</a><a href="#catalog">Best sellers</a><a href="#catalog">Our story</a></div><div><strong>Support</strong><a href="#wholesaleTitle">Wholesale</a><a href="#">Shipping & returns</a><a href="#">Contact us</a></div></div><div class="newsletter"><strong>A little goodness, delivered.</strong><p>Monthly rituals, seasonal drops, zero noise.</p><form id="newsletterForm"><label class="sr-only" for="emailInput">Email address</label><input id="emailInput" type="email" placeholder="Your email address" required><button type="submit" aria-label="Subscribe">&#8594;</button></form><small id="newsletterMessage"></small></div></div><div class="footer-bottom section-shell"><span>&copy; 2024 Nativa Botanics</span><span>Made with care in Jakarta <span class="gold-dot">&#10022;</span></span><div><a href="#">Instagram</a><a href="#">Privacy</a></div></div></footer>
+
+  <div class="modal-backdrop" id="rfqModal" hidden><div class="modal glass-panel" role="dialog" aria-modal="true" aria-labelledby="rfqTitle"><button class="modal-close" id="closeModal" type="button" aria-label="Close inquiry form">&#10005;</button><p class="eyebrow gold"><span></span> Nativa wholesale</p><h2 id="rfqTitle">Let's grow<br><em>something good.</em></h2><p class="modal-intro">Tell us a little about your needs and our wholesale team will be in touch within 48 hours.</p><form id="rfqForm" class="rfq-form"><div class="form-row"><label>Full name<input name="name" type="text" placeholder="Your name" required></label><label>Work email<input name="email" type="email" placeholder="you@company.com" required></label></div><label>Business type<select name="business" required><option value="">Select one</option><option>Cafe or restaurant</option><option>Retail store</option><option>Hotel or hospitality</option><option>Distributor</option></select></label><label>What are you looking for?<textarea name="message" rows="3" placeholder="Products, estimated volume, custom packaging..."></textarea></label><button class="button button-primary" type="submit">Send inquiry <span aria-hidden="true">&#8594;</span></button><p class="form-success" id="formSuccess" hidden>Inquiry received. We will be in touch shortly.</p></form></div></div>
+  <div class="modal-backdrop" id="productModal" hidden><div class="modal product-modal glass-panel" role="dialog" aria-modal="true" aria-labelledby="productModalTitle"><button class="modal-close" id="closeProductModal" type="button" aria-label="Close product details">&#10005;</button><div id="productModalContent"></div></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
