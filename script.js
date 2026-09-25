@@ -96,7 +96,7 @@ const products = [
     image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=600&q=85'
   },
  {
-    id: 8,
+    id: 9,
     name: 'Moringa Blue SuperSpeed',
     type: 'Supplements',
     category: 'supplements',
@@ -117,7 +117,8 @@ const descriptions = {
   5: 'Fragrant lemongrass, fennel, and young coconut vinegar make a refreshing tonic designed for a lighter, happier gut.',
   6: 'Tart rosella petals, hibiscus, and wild honey create a vivid ruby tea rich in antioxidants and bright botanical character.',
   7: 'A measured botanical extract with ashwagandha and holy basil for a grounded addition to busy daily routines.',
-  8: 'Fresh moringa leaf powder, gently dried to preserve its earthy flavor and nutrient-dense green goodness.'
+  8: 'Fresh moringa leaf powder, gently dried to preserve its earthy flavor and nutrient-dense green goodness.',
+  9: 'A vibrant blue blend of moringa and other botanicals, designed to provide a refreshing twist to your daily routine.'
 };
 
 const state = {
