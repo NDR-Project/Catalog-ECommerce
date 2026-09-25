@@ -100,9 +100,9 @@ const products = [
     name: 'Moringa Blue SuperSpeed',
     type: 'Supplements',
     category: 'supplements',
-    price: 112000,
-    rating: 4.8,
-    reviews: 76,
+    price: 52900,
+    rating: 2.7,
+    reviews: 87,
     benefit: ['immunity', 'energy'],
     badge: '100% Organic',
     image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=600&q=85'
