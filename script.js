@@ -97,7 +97,7 @@ const products = [
   },
  {
     id: 8,
-    name: 'Moringa Green Superleaf',
+    name: 'Moringa Blue SuperSpeed',
     type: 'Supplements',
     category: 'supplements',
     price: 112000,
