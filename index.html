@@ -8,39 +8,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <svg class="sr-only" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="container-glass" x="0%" y="0%" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.02" numOctaves="2" seed="92" result="noise"></feTurbulence>
-        <feGaussianBlur in="noise" stdDeviation="1.2" result="blur"></feGaussianBlur>
-        <feDisplacementMap in="SourceGraphic" in2="blur" scale="50" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
-      </filter>
-      <filter id="goo" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"></feGaussianBlur>
-        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo"></feColorMatrix>
-        <feBlend in="SourceGraphic" in2="goo"></feBlend>
-      </filter>
-      <filter id="knockout" color-interpolation-filters="sRGB">
-        <feColorMatrix result="knocked" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 1 0" />
-        <feComponentTransfer>
-          <feFuncR type="linear" slope="3" intercept="-1" />
-          <feFuncG type="linear" slope="3" intercept="-1" />
-          <feFuncB type="linear" slope="3" intercept="-1" />
-        </feComponentTransfer>
-        <feComponentTransfer>
-          <feFuncR type="table" tableValues="0 0 0 0 0 1 1 1 1 1" />
-          <feFuncG type="table" tableValues="0 0 0 0 0 1 1 1 1 1" />
-          <feFuncB type="table" tableValues="0 0 0 0 0 1 1 1 1 1" />
-        </feComponentTransfer>
-      </filter>
-      <filter id="remove-black" color-interpolation-filters="sRGB">
-        <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -255 -255 -255 0 1" result="black-pixels" />
-        <feMorphology in="black-pixels" operator="dilate" radius="0.5" result="smoothed" />
-        <feComposite in="SourceGraphic" in2="smoothed" operator="out" />
-      </filter>
-    </defs>
-  </svg>
-
   <div class="ambient ambient-one" aria-hidden="true"></div>
   <div class="ambient ambient-two" aria-hidden="true"></div>
   <div class="ambient ambient-three" aria-hidden="true"></div>

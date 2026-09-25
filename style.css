@@ -401,6 +401,7 @@ button {
   bottom: 92px;
   z-index: 29;
   width: min(360px, calc(100% - 32px));
+  max-height: min(72vh, 760px);
   overflow: hidden;
   transform: translate(-50%, 18px) scale(.98);
   border: 1px solid rgba(255,255,255,.34);
@@ -429,15 +430,33 @@ button {
 }
 .dock-track {
   display: flex;
+  align-items: flex-start;
   position: relative;
   left: 0;
   width: 300%;
+  height: 100%;
   transition: none;
 }
 .dock-slide {
+  display: flex;
   flex: 0 0 33.3333%;
+  flex-direction: column;
   min-height: 142px;
+  max-height: min(72vh, 760px);
   padding: 19px 20px 20px;
+  overflow: hidden;
+}
+.dock-slide[data-slide="wishlist"] {
+  min-height: 240px;
+}
+.dock-slide[data-slide="cart"] {
+  min-height: 320px;
+}
+.dock-slide[data-slide="account"] {
+  min-height: 260px;
+}
+.dock-slide > * {
+  flex-shrink: 0;
 }
 .dock-slide-heading {
   display: flex;
@@ -499,8 +518,23 @@ button {
   background: rgba(255,255,255,.22);
   font-size: 11px;
 }
+.dock-slide[data-slide="wishlist"] .dock-list,
+.dock-slide[data-slide="cart"] .dock-list {
+  flex: 1 1 auto;
+  max-height: clamp(180px, 38vh, 360px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.dock-slide[data-slide="account"] .account-card {
+  flex: 1 1 auto;
+  max-height: clamp(180px, 38vh, 320px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
 .dock-cart-total {
-  margin-top: 20px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(26,60,52,.08);
   color: var(--forest);
   font-size: 13px;
   font-weight: 700;

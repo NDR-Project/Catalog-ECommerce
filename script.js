@@ -121,6 +121,41 @@ const descriptions = {
   9: 'A vibrant blue blend of moringa and other botanicals, designed to provide a refreshing twist to your daily routine.'
 };
 
+const svgFilterMarkup = `
+  <svg class="sr-only" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="container-glass" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.02" numOctaves="2" seed="92" result="noise"></feTurbulence>
+        <feGaussianBlur in="noise" stdDeviation="1.2" result="blur"></feGaussianBlur>
+        <feDisplacementMap in="SourceGraphic" in2="blur" scale="50" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+      </filter>
+      <filter id="goo" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"></feGaussianBlur>
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo"></feColorMatrix>
+        <feBlend in="SourceGraphic" in2="goo"></feBlend>
+      </filter>
+      <filter id="knockout" color-interpolation-filters="sRGB">
+        <feColorMatrix result="knocked" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 1 0"></feColorMatrix>
+        <feComponentTransfer>
+          <feFuncR type="linear" slope="3" intercept="-1"></feFuncR>
+          <feFuncG type="linear" slope="3" intercept="-1"></feFuncG>
+          <feFuncB type="linear" slope="3" intercept="-1"></feFuncB>
+        </feComponentTransfer>
+        <feComponentTransfer>
+          <feFuncR type="table" tableValues="0 0 0 0 0 1 1 1 1 1"></feFuncR>
+          <feFuncG type="table" tableValues="0 0 0 0 0 1 1 1 1 1"></feFuncG>
+          <feFuncB type="table" tableValues="0 0 0 0 0 1 1 1 1 1"></feFuncB>
+        </feComponentTransfer>
+      </filter>
+      <filter id="remove-black" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -255 -255 -255 0 1" result="black-pixels"></feColorMatrix>
+        <feMorphology in="black-pixels" operator="dilate" radius="0.5" result="smoothed"></feMorphology>
+        <feComposite in="SourceGraphic" in2="smoothed" operator="out"></feComposite>
+      </filter>
+    </defs>
+  </svg>
+`;
+
 const state = {
   category: 'all',
   query: '',
@@ -128,6 +163,14 @@ const state = {
   wishlist: [],
   sort: 'featured',
   userName: 'Amara'
+};
+
+const ensureSvgFilters = () => {
+  if (document.querySelector('#container-glass')) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = svgFilterMarkup;
+  document.body.insertBefore(wrapper.firstElementChild, document.body.firstChild);
 };
 
 const element = {
@@ -606,6 +649,8 @@ const resetAccountName = () => {
 };
 
 const initState = () => {
+  ensureSvgFilters();
+
   try {
     const savedName = localStorage.getItem('nativa-user-name');
     if (savedName) state.userName = savedName;
