@@ -56,8 +56,7 @@ const descriptions = {
   4: 'Jamu Sinom adalah jamu yang terbuat dari pucuk daun asam muda (sinom) pilihan yang dipadukan dengan kunyit, temulawak, dan gula asli.'
 };
 
-// Isi dengan nomor WhatsApp ketua kelas dalam format internasional tanpa tanda +, spasi, atau strip.
-const WHATSAPP_NUMBER = '';
+const WHATSAPP_NUMBER = '+62 822-4530-0368';
 
 const svgFilterMarkup = `
   <svg class="sr-only" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
