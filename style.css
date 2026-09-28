@@ -1638,9 +1638,49 @@ button {
   max-height: min(90vh, 820px);
   overflow-y: auto;
 }
+.checkout-step[hidden] {
+  display: none;
+}
 .checkout-modal h2 {
   margin: 12px 0;
   font-size: 38px;
+}
+.checkout-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+}
+.checkout-actions .button {
+  justify-content: space-between;
+  min-height: 54px;
+  text-align: left;
+}
+.thank-you-step {
+  text-align: center;
+}
+.thank-you-image {
+  display: block;
+  width: min(100%, 360px);
+  height: 190px;
+  margin: 0 auto 24px;
+  border: 5px solid rgba(255,255,255,.78);
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 12px 28px rgba(26,60,52,.12);
+}
+.thank-you-step .eyebrow {
+  justify-content: center;
+}
+.thank-you-step .modal-intro {
+  margin-inline: auto;
+}
+.replay-thanks,
+.thank-you-close {
+  width: 100%;
+  margin-top: 12px;
+}
+.replay-thanks {
+  justify-content: center;
 }
 .checkout-summary {
   margin: 20px 0;

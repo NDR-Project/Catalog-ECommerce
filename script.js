@@ -9,7 +9,7 @@ const products = [
     reviews: 58,
     benefit: ['kesehatan', 'menyegarkan'],
     badge: 'Kelompok 5',
-    image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=85'
+    image: 'https://i.ibb.co.com/HpRbFXcG/Whats-App-Image-2026-09-23-at-07-25-49.jpg'
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ const products = [
     reviews: 15,
     benefit: ['alami', 'menyegarkan'],
     badge: 'Kelompok 1',
-    image: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=600&q=85'
+    image: 'https://i.ibb.co.com/v638MsJk/Whats-App-Image-2026-09-23-at-07-25-32.jpg'
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ const products = [
     reviews: 32,
     benefit: ['manis', 'segar'],
     badge: 'Kelompok 7',
-    image: 'https://images.unsplash.com/photo-1530968033775-2c92736b131e?auto=format&fit=crop&w=600&q=85'
+    image: 'https://i.ibb.co.com/jZJWHq2V/Whats-App-Image-2026-09-23-at-0725-33.jpg'
   },
   {
     id: 4,
@@ -45,7 +45,7 @@ const products = [
     reviews: 34,
     benefit: ['alami', 'segar'],
     badge: 'Kelompok 6',
-    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=85'
+    image: 'https://i.ibb.co.com/LXMnMVPB/Whats-App-Image-2026-09-23-at-07-25-33.jpg'
   }
 ];
 
@@ -101,7 +101,8 @@ const state = {
   sort: 'featured',
   userName: 'Amara',
   checkoutItems: [],
-  checkoutMode: 'single'
+  checkoutMode: 'single',
+  checkoutWhatsAppUrl: ''
 };
 
 const ensureSvgFilters = () => {
@@ -159,6 +160,13 @@ const element = {
   checkoutQuantityField: document.querySelector('#checkoutQuantityField'),
   checkoutMethod: document.querySelector('#checkoutMethod'),
   checkoutAddress: document.querySelector('#checkoutAddress'),
+  checkoutDetailsStep: document.querySelector('#checkoutDetailsStep'),
+  checkoutActionStep: document.querySelector('#checkoutActionStep'),
+  orderCompletedStep: document.querySelector('#orderCompletedStep'),
+  continueWhatsAppButton: document.querySelector('#continueWhatsAppButton'),
+  orderCompletedButton: document.querySelector('#orderCompletedButton'),
+  replayThankYouAudio: document.querySelector('#replayThankYouAudio'),
+  finishOrderButton: document.querySelector('#finishOrderButton'),
   accountGreeting: document.querySelector('#accountGreeting'),
   accountSummary: document.querySelector('#accountSummary'),
   accountNameInput: document.querySelector('#accountNameInput'),
@@ -534,6 +542,11 @@ const renderCheckoutSummary = () => {
 };
 
 const openCheckout = (productId = null) => {
+  element.checkoutDetailsStep.hidden = false;
+  element.checkoutActionStep.hidden = true;
+  element.orderCompletedStep.hidden = true;
+  state.checkoutWhatsAppUrl = '';
+
   if (productId !== null) {
     state.checkoutMode = 'single';
     state.checkoutItems = [{ id: productId, qty: 1 }];
@@ -562,6 +575,7 @@ const openCheckout = (productId = null) => {
 const closeCheckout = () => {
   element.checkoutModal.hidden = true;
   setBodyScrollLock(false);
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 };
 
 const submitCheckout = (event) => {
@@ -579,7 +593,7 @@ const submitCheckout = (event) => {
   const productDetails = items.map(({ product, qty }) => `- ${product.name} (${product.badge}) sebanyak ${qty}`).join('\n');
   const message = [
     'Halo Ketua Kelas, saya ingin memesan produk berikut:',
-    `Nama akun: ${state.userName}`,
+    `Nama saya: ${state.userName}`,
     'Pesanan:',
     productDetails,
     `Metode pemesanan: ${element.checkoutMethod.value}`,
@@ -590,8 +604,39 @@ const submitCheckout = (event) => {
     ? `https://wa.me/${recipient}?text=${encodeURIComponent(message)}`
     : `https://wa.me/?text=${encodeURIComponent(message)}`;
 
-  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-  closeCheckout();
+  state.checkoutWhatsAppUrl = whatsappUrl;
+  element.checkoutDetailsStep.hidden = true;
+  element.checkoutActionStep.hidden = false;
+};
+
+const continueOrderInWhatsApp = () => {
+  if (!state.checkoutWhatsAppUrl) return;
+  window.open(state.checkoutWhatsAppUrl, '_blank', 'noopener,noreferrer');
+};
+
+const playThankYouAudio = () => {
+  if (!('speechSynthesis' in window)) {
+    showToast('Audio ucapan tidak didukung oleh browser ini');
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(`Terima kasih, ${state.userName}, sudah memesan produk kami. Semoga harimu menyenangkan!`);
+  utterance.lang = 'id-ID';
+  const indonesianVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('id'));
+  if (indonesianVoice) utterance.voice = indonesianVoice;
+  window.speechSynthesis.speak(utterance);
+};
+
+const showOrderCompleted = () => {
+  element.checkoutActionStep.hidden = true;
+  element.orderCompletedStep.hidden = false;
+  if (state.checkoutMode === 'cart') {
+    state.cart = [];
+    renderCart();
+    renderAccount();
+  }
+  playThankYouAudio();
 };
 
 const handleAutocompleteClick = (event) => {
@@ -754,6 +799,10 @@ element.rfqForm.addEventListener('submit', (event) => {
 element.closeProductModalButton.addEventListener('click', closeProductModal);
 element.closeCheckoutModalButton.addEventListener('click', closeCheckout);
 element.checkoutForm.addEventListener('submit', submitCheckout);
+element.continueWhatsAppButton.addEventListener('click', continueOrderInWhatsApp);
+element.orderCompletedButton.addEventListener('click', showOrderCompleted);
+element.replayThankYouAudio.addEventListener('click', playThankYouAudio);
+element.finishOrderButton.addEventListener('click', closeCheckout);
 element.checkoutQuantity.addEventListener('input', () => {
   const quantity = Math.max(1, Number(element.checkoutQuantity.value) || 1);
   state.checkoutItems = [{ ...state.checkoutItems[0], qty: quantity }];
