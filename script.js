@@ -56,6 +56,9 @@ const descriptions = {
   4: 'Jamu Sinom adalah jamu yang terbuat dari pucuk daun asam muda (sinom) pilihan yang dipadukan dengan kunyit, temulawak, dan gula asli.'
 };
 
+// Isi dengan nomor WhatsApp ketua kelas dalam format internasional tanpa tanda +, spasi, atau strip.
+const WHATSAPP_NUMBER = '';
+
 const svgFilterMarkup = `
   <svg class="sr-only" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
     <defs>
@@ -97,7 +100,9 @@ const state = {
   cart: [],
   wishlist: [],
   sort: 'featured',
-  userName: 'Amara'
+  userName: 'Amara',
+  checkoutItems: [],
+  checkoutMode: 'single'
 };
 
 const ensureSvgFilters = () => {
@@ -145,6 +150,16 @@ const element = {
   cartEmpty: document.querySelector('#cartEmpty'),
   cartTotal: document.querySelector('#cartTotal'),
   cartList: document.querySelector('#cartList'),
+  cartCheckoutButton: document.querySelector('#cartCheckoutButton'),
+  checkoutModal: document.querySelector('#checkoutModal'),
+  closeCheckoutModalButton: document.querySelector('#closeCheckoutModal'),
+  checkoutSummary: document.querySelector('#checkoutSummary'),
+  checkoutForm: document.querySelector('#checkoutForm'),
+  checkoutName: document.querySelector('#checkoutName'),
+  checkoutQuantity: document.querySelector('#checkoutQuantity'),
+  checkoutQuantityField: document.querySelector('#checkoutQuantityField'),
+  checkoutMethod: document.querySelector('#checkoutMethod'),
+  checkoutAddress: document.querySelector('#checkoutAddress'),
   accountGreeting: document.querySelector('#accountGreeting'),
   accountSummary: document.querySelector('#accountSummary'),
   accountNameInput: document.querySelector('#accountNameInput'),
@@ -219,7 +234,7 @@ const renderProducts = () => {
       const isSaved = state.wishlist.includes(product.id);
 
       return `
-        <article class="product-card">
+        <article class="product-card" data-product="${product.id}" tabindex="0" role="button" aria-label="Lihat produk ${product.name}">
           <div class="product-image">
             <img src="${product.image}" alt="${product.name}" loading="lazy">
             <span class="product-badge">${product.badge}</span>
@@ -241,7 +256,6 @@ const renderProducts = () => {
             </div>
             <div class="product-footer">
               <span class="product-price">${formatPrice(product.price)}<small>per 100g</small></span>
-              <button class="product-details" data-details="${product.id}" type="button">View description</button>
               <button class="add-cart" data-cart="${product.id}" type="button" aria-label="Add ${product.name} to cart">+</button>
             </div>
           </div>
@@ -349,9 +363,10 @@ const openProductModal = (productId) => {
       </div>
       <p class="product-description">${descriptions[product.id]}</p>
       <p class="product-modal-price">${formatPrice(product.price)} <small>per 100g</small></p>
-      <button class="button button-primary" data-modal-cart="${product.id}" type="button">
-        Add to cart <span aria-hidden="true">&#8594;</span>
-      </button>
+      <div class="product-modal-actions">
+        <button class="button button-primary" data-buy-now="${product.id}" type="button">Beli sekarang <span aria-hidden="true">&#8594;</span></button>
+        <button class="button button-outline" data-modal-cart="${product.id}" type="button">Tambah ke keranjang</button>
+      </div>
     </div>
   `;
 
@@ -374,7 +389,7 @@ const renderWishlist = () => {
         <div class="dock-product-info">
           <strong>${product.name}</strong>
           <span>${product.type}</span>
-          <small>${formatPrice(product.price)} • ${product.stock} in stock</small>
+          <small>${formatPrice(product.price)} • Produk pilihan</small>
         </div>
         <button class="mini-action" type="button" data-wishlist-remove="${product.id}">Remove</button>
       </div>
@@ -399,7 +414,7 @@ const renderCart = () => {
         <div class="dock-product-info">
           <strong>${product.name}</strong>
           <span>${formatPrice(product.price)}</span>
-          <small>${product.stock} available</small>
+          <small>Produk pilihan</small>
         </div>
         <div class="dock-qty">
           <button type="button" data-cart-adjust="${product.id}" data-direction="-1">-</button>
@@ -415,6 +430,7 @@ const renderCart = () => {
     ? `${getCartCount()} item${getCartCount() === 1 ? '' : 's'} • ${formatPrice(getCartTotal())}`
     : '0 item';
   element.cartCount.textContent = String(getCartCount());
+  element.cartCheckoutButton.hidden = cartItems.length === 0;
 };
 
 const renderAccount = () => {
@@ -433,7 +449,7 @@ const handleAddToCart = (productId) => {
   const existingItem = state.cart.find((item) => item.id === productId);
 
   if (existingItem) {
-    if (existingItem.qty >= product.stock) {
+    if (product.stock && existingItem.qty >= product.stock) {
       showToast('Stock limit reached for this product');
       return;
     }
@@ -480,11 +496,103 @@ const handleCategoryClick = (event) => {
 const handleGridClick = (event) => {
   const cartButton = event.target.closest('[data-cart]');
   const wishButton = event.target.closest('[data-wishlist]');
-  const detailsButton = event.target.closest('[data-details]');
 
-  if (cartButton) handleAddToCart(Number(cartButton.dataset.cart));
-  if (wishButton) toggleWishlistItem(Number(wishButton.dataset.wishlist));
-  if (detailsButton) openProductModal(Number(detailsButton.dataset.details));
+  if (cartButton) {
+    event.stopPropagation();
+    handleAddToCart(Number(cartButton.dataset.cart));
+    return;
+  }
+  if (wishButton) {
+    event.stopPropagation();
+    toggleWishlistItem(Number(wishButton.dataset.wishlist));
+    return;
+  }
+  const card = event.target.closest('[data-product]');
+  if (card) openProductModal(Number(card.dataset.product));
+};
+
+const handleProductCardKeydown = (event) => {
+  const card = event.target.closest('[data-product]');
+  if (!card || (event.key !== 'Enter' && event.key !== ' ')) return;
+  if (event.target.closest('button')) return;
+  event.preventDefault();
+  openProductModal(Number(card.dataset.product));
+};
+
+const renderCheckoutSummary = () => {
+  const items = state.checkoutItems.map(({ id, qty }) => {
+    const product = products.find((entry) => entry.id === id);
+    return product ? { ...product, qty } : null;
+  }).filter(Boolean);
+
+  element.checkoutSummary.innerHTML = items.map((product) => `
+    <div class="checkout-item">
+      <img src="${product.image}" alt="">
+      <div><strong>${product.name}</strong><span>${product.badge} · ${product.qty} × ${formatPrice(product.price)}</span></div>
+      <b>${formatPrice(product.qty * product.price)}</b>
+    </div>
+  `).join('') + `<div class="checkout-grand-total"><span>Total</span><strong>${formatPrice(items.reduce((total, item) => total + item.qty * item.price, 0))}</strong></div>`;
+};
+
+const openCheckout = (productId = null) => {
+  if (productId !== null) {
+    state.checkoutMode = 'single';
+    state.checkoutItems = [{ id: productId, qty: 1 }];
+    element.checkoutQuantityField.hidden = false;
+    element.checkoutQuantity.value = '1';
+  } else {
+    state.checkoutMode = 'cart';
+    state.checkoutItems = state.cart.map((item) => ({ ...item }));
+    element.checkoutQuantityField.hidden = true;
+  }
+
+  if (!state.checkoutItems.length) {
+    showToast('Keranjang masih kosong');
+    return;
+  }
+
+  element.checkoutName.value = state.userName;
+  renderCheckoutSummary();
+  closeProductModal();
+  closeDock();
+  element.checkoutModal.hidden = false;
+  setBodyScrollLock(true);
+  element.checkoutAddress.focus();
+};
+
+const closeCheckout = () => {
+  element.checkoutModal.hidden = true;
+  setBodyScrollLock(false);
+};
+
+const submitCheckout = (event) => {
+  event.preventDefault();
+  const items = state.checkoutItems.map(({ id, qty }) => ({
+    product: products.find((entry) => entry.id === id),
+    qty: state.checkoutMode === 'single' ? Number(element.checkoutQuantity.value) : qty
+  })).filter((item) => item.product);
+
+  if (!items.length || items.some((item) => !Number.isInteger(item.qty) || item.qty < 1)) {
+    showToast('Periksa kembali kuantitas pesanan');
+    return;
+  }
+
+  const productDetails = items.map(({ product, qty }) => `- ${product.name} (${product.badge}) sebanyak ${qty}`).join('\n');
+  const message = [
+    'Halo Ketua Kelas, saya ingin memesan produk berikut:',
+    `Nama akun: ${state.userName}`,
+    'Pesanan:',
+    productDetails,
+    `Metode pemesanan: ${element.checkoutMethod.value}`,
+    `Alamat tujuan: ${element.checkoutAddress.value.trim()}`
+  ].join('\n');
+  const recipient = WHATSAPP_NUMBER.replace(/\D/g, '');
+  const whatsappUrl = recipient
+    ? `https://wa.me/${recipient}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  closeCheckout();
 };
 
 const handleAutocompleteClick = (event) => {
@@ -516,7 +624,7 @@ const handleDockActionClick = (event) => {
       state.cart = state.cart.filter((entry) => entry.id !== productId);
     } else {
       const product = products.find((entry) => entry.id === productId);
-      if (product && newQty > product.stock) {
+      if (product?.stock && newQty > product.stock) {
         showToast('Stock limit reached for this product');
         return;
       }
@@ -544,6 +652,13 @@ const handleGlobalClick = (event) => {
   if (!event.target.closest('.search-wrap')) element.autocomplete.classList.remove('show');
   if (event.target === element.rfqModal) closeModal();
   if (event.target === element.productModal) closeProductModal();
+  if (event.target === element.checkoutModal) closeCheckout();
+
+  const buyNowButton = event.target.closest('[data-buy-now]');
+  if (buyNowButton) {
+    openCheckout(Number(buyNowButton.dataset.buyNow));
+    return;
+  }
 
   const addButton = event.target.closest('[data-modal-cart]');
   if (addButton) {
@@ -556,6 +671,7 @@ const handleDocumentKeydown = (event) => {
   if (event.key !== 'Escape') return;
   if (!element.rfqModal.hidden) { closeModal(); return; }
   if (!element.productModal.hidden) { closeProductModal(); return; }
+  if (!element.checkoutModal.hidden) { closeCheckout(); return; }
   closeDock();
 };
 
@@ -602,6 +718,7 @@ const initState = () => {
 
 element.categoryButtons.addEventListener('click', handleCategoryClick);
 element.productGrid.addEventListener('click', handleGridClick);
+element.productGrid.addEventListener('keydown', handleProductCardKeydown);
 element.searchInput.addEventListener('input', (event) => {
   state.query = event.target.value.trim();
   renderSuggestions(state.query);
@@ -636,6 +753,14 @@ element.rfqForm.addEventListener('submit', (event) => {
 });
 
 element.closeProductModalButton.addEventListener('click', closeProductModal);
+element.closeCheckoutModalButton.addEventListener('click', closeCheckout);
+element.checkoutForm.addEventListener('submit', submitCheckout);
+element.checkoutQuantity.addEventListener('input', () => {
+  const quantity = Math.max(1, Number(element.checkoutQuantity.value) || 1);
+  state.checkoutItems = [{ ...state.checkoutItems[0], qty: quantity }];
+  renderCheckoutSummary();
+});
+element.cartCheckoutButton.addEventListener('click', () => openCheckout());
 
 element.newsletterForm.addEventListener('submit', (event) => {
   event.preventDefault();
