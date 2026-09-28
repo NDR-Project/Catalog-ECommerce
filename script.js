@@ -167,6 +167,7 @@ const element = {
   orderCompletedButton: document.querySelector('#orderCompletedButton'),
   replayThankYouAudio: document.querySelector('#replayThankYouAudio'),
   finishOrderButton: document.querySelector('#finishOrderButton'),
+  thankYouAudio: document.querySelector('#thankYouAudio'),
   accountGreeting: document.querySelector('#accountGreeting'),
   accountSummary: document.querySelector('#accountSummary'),
   accountNameInput: document.querySelector('#accountNameInput'),
@@ -575,6 +576,8 @@ const openCheckout = (productId = null) => {
 const closeCheckout = () => {
   element.checkoutModal.hidden = true;
   setBodyScrollLock(false);
+  element.thankYouAudio.pause();
+  element.thankYouAudio.currentTime = 0;
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 };
 
@@ -615,17 +618,30 @@ const continueOrderInWhatsApp = () => {
 };
 
 const playThankYouAudio = () => {
-  if (!('speechSynthesis' in window)) {
-    showToast('Audio ucapan tidak didukung oleh browser ini');
-    return;
-  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  element.thankYouAudio.pause();
+  element.thankYouAudio.currentTime = 0;
 
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(`Terima kasih, ${state.userName}, sudah memesan produk kami. Semoga harimu menyenangkan!`);
-  utterance.lang = 'id-ID';
-  const indonesianVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('id'));
-  if (indonesianVoice) utterance.voice = indonesianVoice;
-  window.speechSynthesis.speak(utterance);
+  let speechStarted = false;
+  const playTextToSpeech = () => {
+    if (speechStarted) return;
+    speechStarted = true;
+    if (!('speechSynthesis' in window)) {
+      showToast('Text-to-speech tidak didukung browser ini');
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(`Terima kasih, ${state.userName}, sudah memesan produk kami. Semoga harimu menyenangkan!`);
+    utterance.lang = 'id-ID';
+    const indonesianVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('id'));
+    if (indonesianVoice) utterance.voice = indonesianVoice;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  element.thankYouAudio.onended = playTextToSpeech;
+  element.thankYouAudio.onerror = playTextToSpeech;
+  const playback = element.thankYouAudio.play();
+  if (playback) playback.catch(playTextToSpeech);
 };
 
 const showOrderCompleted = () => {
